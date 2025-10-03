@@ -192,7 +192,7 @@ class SessionManager:
         if os.path.exists(filepath):
             os.remove(filepath)
     
-    def restore_session(self, filepath: str, open_timeout: float = 6.0, poll_interval: float = 0.25):
+    def restore_session(self, filepath: str, open_timeout: float = 2.0, poll_interval: float = 0.1):
         """Restore a saved session.
         
         Args:
@@ -210,6 +210,10 @@ class SessionManager:
         restored = 0
         skipped = 0
         
+        # Separate windows into already-open and needs-opening
+        to_open = []
+        to_restore = []
+        
         for w in windows:
             path = w.get("path")
             rect = w.get("rect")
@@ -222,33 +226,52 @@ class SessionManager:
             # Try to find an already-open window for this path
             hwnd = self._find_window_by_path(path, used_hwnds)
             
-            if hwnd is None:
-                # If not found, open it
-                try:
-                    subprocess.Popen(["explorer", path], shell=False)
-                except Exception as e:
-                    print(f"Failed to start explorer for {path!r}: {e}")
-                    skipped += 1
-                    continue
-                
-                # Wait for a new shell window for this path to appear
-                deadline = time.time() + open_timeout
-                while time.time() < deadline:
-                    hwnd = self._find_window_by_path(path, used_hwnds)
-                    if hwnd is not None:
-                        break
-                    time.sleep(poll_interval)
-                
-                if hwnd is None:
-                    print(f"Timed out waiting for Explorer window for: {path}")
-                    skipped += 1
-                    continue
+            if hwnd is not None:
+                # Already open, just needs geometry applied
+                to_restore.append((hwnd, rect, show_cmd))
+                used_hwnds.add(hwnd)
+            else:
+                # Need to open this window
+                to_open.append((path, rect, show_cmd))
+        
+        # Launch ALL new windows in parallel (don't wait)
+        for path, rect, show_cmd in to_open:
+            try:
+                subprocess.Popen(["explorer", path], shell=False)
+            except Exception as e:
+                print(f"Failed to start explorer for {path!r}: {e}")
+                skipped += 1
+        
+        # Now wait for all windows to appear and match them
+        if to_open:
+            deadline = time.time() + open_timeout
+            remaining = list(to_open)  # Copy the list
             
-            # Apply geometry
+            while remaining and time.time() < deadline:
+                # Check all remaining windows at once
+                for i in range(len(remaining) - 1, -1, -1):
+                    path, rect, show_cmd = remaining[i]
+                    hwnd = self._find_window_by_path(path, used_hwnds)
+                    
+                    if hwnd is not None:
+                        # Found it!
+                        to_restore.append((hwnd, rect, show_cmd))
+                        used_hwnds.add(hwnd)
+                        remaining.pop(i)
+                
+                if remaining:
+                    time.sleep(poll_interval)
+            
+            # Count any that didn't open in time as skipped
+            for path, _, _ in remaining:
+                print(f"Timed out waiting for Explorer window for: {path}")
+                skipped += 1
+        
+        # Apply geometry to all windows (both already-open and newly-opened)
+        for hwnd, rect, show_cmd in to_restore:
             success = self._apply_geometry(hwnd, rect, show_cmd)
             if success:
                 restored += 1
-                used_hwnds.add(hwnd)
             else:
                 skipped += 1
         
