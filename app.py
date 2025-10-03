@@ -84,57 +84,81 @@ class SessionCard(ctk.CTkFrame):
         button_frame = ctk.CTkFrame(self, fg_color="transparent")
         button_frame.grid(row=0, column=1, sticky="e", padx=15, pady=15)
         
-        # Restore button with icon (vertical layout)
-        restore_container = ctk.CTkFrame(button_frame, fg_color="transparent")
-        restore_container.grid(row=0, column=0, padx=(0, 15))
+        # Restore button with icon (vertical layout) - clickable container
+        self.restore_container = ctk.CTkFrame(button_frame, fg_color="transparent", cursor="hand2")
+        self.restore_container.grid(row=0, column=0, padx=(0, 15))
         
         self.restore_btn = ctk.CTkButton(
-            restore_container,
+            self.restore_container,
             text="🔄",
             width=50,
             height=50,
             font=ctk.CTkFont(size=24),
             fg_color="transparent",
-            hover_color="#F5F5F5",
+            hover_color="#FFF3E0",
             text_color="#2B2B2B",
             corner_radius=6,
             command=self._on_restore_clicked
         )
         self.restore_btn.pack()
         
-        restore_label = ctk.CTkLabel(
-            restore_container,
+        self.restore_label = ctk.CTkLabel(
+            self.restore_container,
             text="Restore",
             font=ctk.CTkFont(size=10),
-            text_color="#757575"
+            text_color="#757575",
+            cursor="hand2"
         )
-        restore_label.pack()
+        self.restore_label.pack()
         
-        # Delete button with icon (vertical layout)
-        delete_container = ctk.CTkFrame(button_frame, fg_color="transparent")
-        delete_container.grid(row=0, column=1)
+        # Delete button with icon (vertical layout) - clickable container with red hover
+        self.delete_container = ctk.CTkFrame(button_frame, fg_color="transparent", cursor="hand2")
+        self.delete_container.grid(row=0, column=1)
         
         self.delete_btn = ctk.CTkButton(
-            delete_container,
+            self.delete_container,
             text="🗑",
             width=50,
             height=50,
             font=ctk.CTkFont(size=24),
             fg_color="transparent",
-            hover_color="#F5F5F5",
-            text_color="#2B2B2B",
+            hover_color="#FFEBEE",
+            text_color="#757575",
             corner_radius=6,
             command=self._on_delete_clicked
         )
         self.delete_btn.pack()
         
-        delete_label = ctk.CTkLabel(
-            delete_container,
+        self.delete_label = ctk.CTkLabel(
+            self.delete_container,
             text="Delete",
             font=ctk.CTkFont(size=10),
-            text_color="#757575"
+            text_color="#757575",
+            cursor="hand2"
         )
-        delete_label.pack()
+        self.delete_label.pack()
+        
+        # Make labels clickable
+        self.restore_label.bind("<Button-1>", lambda e: self._on_restore_clicked())
+        self.restore_container.bind("<Button-1>", lambda e: self._on_restore_clicked())
+        self.delete_label.bind("<Button-1>", lambda e: self._on_delete_clicked())
+        self.delete_container.bind("<Button-1>", lambda e: self._on_delete_clicked())
+        
+        # Add hover effects for restore button (golden)
+        self.restore_container.bind("<Enter>", self._on_restore_hover_enter)
+        self.restore_container.bind("<Leave>", self._on_restore_hover_leave)
+        self.restore_btn.bind("<Enter>", self._on_restore_hover_enter)
+        self.restore_btn.bind("<Leave>", self._on_restore_hover_leave)
+        self.restore_label.bind("<Enter>", self._on_restore_hover_enter)
+        self.restore_label.bind("<Leave>", self._on_restore_hover_leave)
+        
+        # Add hover effects for delete button (red)
+        self.delete_container.bind("<Enter>", self._on_delete_hover_enter)
+        self.delete_container.bind("<Leave>", self._on_delete_hover_leave)
+        self.delete_btn.bind("<Enter>", self._on_delete_hover_enter)
+        self.delete_btn.bind("<Leave>", self._on_delete_hover_leave)
+        self.delete_label.bind("<Enter>", self._on_delete_hover_enter)
+        self.delete_label.bind("<Leave>", self._on_delete_hover_leave)
         
         # Make card clickable
         self.bind("<Button-1>", self._on_card_clicked)
@@ -157,6 +181,22 @@ class SessionCard(ctk.CTkFrame):
         """Handle delete button click."""
         if self.on_delete:
             self.on_delete(self.session_data)
+    
+    def _on_restore_hover_enter(self, event=None):
+        """Change restore button to golden/orange on hover."""
+        self.restore_label.configure(text_color="#FF8C00")
+    
+    def _on_restore_hover_leave(self, event=None):
+        """Reset restore button color."""
+        self.restore_label.configure(text_color="#757575")
+    
+    def _on_delete_hover_enter(self, event=None):
+        """Change delete button to red on hover."""
+        self.delete_label.configure(text_color="#C62828")
+    
+    def _on_delete_hover_leave(self, event=None):
+        """Reset delete button color."""
+        self.delete_label.configure(text_color="#757575")
     
     def set_selected(self, selected: bool):
         """Update appearance to show selection state."""
@@ -284,11 +324,11 @@ class SnapBackApp(ctk.CTk):
         
         # Configure window
         self.title("SnapBack - Explorer Session Manager")
-        self.geometry("1200x700")
-        self.minsize(1000, 600)
+        self.geometry("1300x700")
+        self.minsize(1100, 600)
         
         # Configure grid
-        self.grid_columnconfigure(0, weight=0, minsize=550)
+        self.grid_columnconfigure(0, weight=0, minsize=650)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
         
