@@ -30,30 +30,35 @@ class SessionCard(ctk.CTkFrame):
         # Configure card appearance
         self.configure(fg_color="white", corner_radius=8, border_width=1, border_color="#E0E0E0")
         self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=0)
+        
+        # Left side content frame
+        content_frame = ctk.CTkFrame(self, fg_color="transparent")
+        content_frame.grid(row=0, column=0, sticky="nsew", padx=15, pady=15)
         
         # Session name/title
         name = session_data.get("name", "Restore Explorer Windows")
         self.title_label = ctk.CTkLabel(
-            self,
+            content_frame,
             text=name,
             font=ctk.CTkFont(size=14, weight="normal"),
             text_color="#2B2B2B",
             anchor="w"
         )
-        self.title_label.grid(row=0, column=0, columnspan=2, sticky="ew", padx=15, pady=(15, 5))
+        self.title_label.pack(anchor="w")
         
         # Session info
         window_count = session_data.get("window_count", 0)
         tab_count = session_data.get("tab_count", 0)
         info_text = f"{window_count} Window{'s' if window_count != 1 else ''} - {tab_count} Tab{'s' if tab_count != 1 else ''}"
         self.info_label = ctk.CTkLabel(
-            self,
+            content_frame,
             text=info_text,
             font=ctk.CTkFont(size=12),
             text_color="#757575",
             anchor="w"
         )
-        self.info_label.grid(row=1, column=0, columnspan=2, sticky="ew", padx=15, pady=(0, 5))
+        self.info_label.pack(anchor="w", pady=(5, 0))
         
         # Timestamp
         saved_at = session_data.get("saved_at", "")
@@ -67,49 +72,73 @@ class SessionCard(ctk.CTkFrame):
             timestamp_text = ""
         
         self.timestamp_label = ctk.CTkLabel(
-            self,
+            content_frame,
             text=timestamp_text,
             font=ctk.CTkFont(size=11),
             text_color="#9E9E9E",
             anchor="w"
         )
-        self.timestamp_label.grid(row=2, column=0, columnspan=2, sticky="ew", padx=15, pady=(0, 10))
+        self.timestamp_label.pack(anchor="w", pady=(5, 0))
         
-        # Button frame
+        # Right side button frame with icons
         button_frame = ctk.CTkFrame(self, fg_color="transparent")
-        button_frame.grid(row=3, column=0, columnspan=2, sticky="ew", padx=15, pady=(0, 15))
-        button_frame.grid_columnconfigure(0, weight=1)
-        button_frame.grid_columnconfigure(1, weight=0)
+        button_frame.grid(row=0, column=1, sticky="e", padx=15, pady=15)
         
-        # Restore button
+        # Restore button with icon (vertical layout)
+        restore_container = ctk.CTkFrame(button_frame, fg_color="transparent")
+        restore_container.grid(row=0, column=0, padx=(0, 15))
+        
         self.restore_btn = ctk.CTkButton(
-            button_frame,
-            text="Restore",
-            width=100,
-            height=32,
-            font=ctk.CTkFont(size=13),
-            fg_color="#FF8C00",
-            hover_color="#FF7700",
+            restore_container,
+            text="🔄",
+            width=50,
+            height=50,
+            font=ctk.CTkFont(size=24),
+            fg_color="transparent",
+            hover_color="#F5F5F5",
+            text_color="#2B2B2B",
+            corner_radius=6,
             command=self._on_restore_clicked
         )
-        self.restore_btn.grid(row=0, column=0, sticky="w", padx=(0, 10))
+        self.restore_btn.pack()
         
-        # Delete button
+        restore_label = ctk.CTkLabel(
+            restore_container,
+            text="Restore",
+            font=ctk.CTkFont(size=10),
+            text_color="#757575"
+        )
+        restore_label.pack()
+        
+        # Delete button with icon (vertical layout)
+        delete_container = ctk.CTkFrame(button_frame, fg_color="transparent")
+        delete_container.grid(row=0, column=1)
+        
         self.delete_btn = ctk.CTkButton(
-            button_frame,
-            text="Delete",
-            width=100,
-            height=32,
-            font=ctk.CTkFont(size=13),
-            fg_color="#E0E0E0",
-            hover_color="#D0D0D0",
+            delete_container,
+            text="🗑",
+            width=50,
+            height=50,
+            font=ctk.CTkFont(size=24),
+            fg_color="transparent",
+            hover_color="#F5F5F5",
             text_color="#2B2B2B",
+            corner_radius=6,
             command=self._on_delete_clicked
         )
-        self.delete_btn.grid(row=0, column=1, sticky="e")
+        self.delete_btn.pack()
+        
+        delete_label = ctk.CTkLabel(
+            delete_container,
+            text="Delete",
+            font=ctk.CTkFont(size=10),
+            text_color="#757575"
+        )
+        delete_label.pack()
         
         # Make card clickable
         self.bind("<Button-1>", self._on_card_clicked)
+        content_frame.bind("<Button-1>", self._on_card_clicked)
         self.title_label.bind("<Button-1>", self._on_card_clicked)
         self.info_label.bind("<Button-1>", self._on_card_clicked)
         self.timestamp_label.bind("<Button-1>", self._on_card_clicked)
@@ -255,11 +284,11 @@ class SnapBackApp(ctk.CTk):
         
         # Configure window
         self.title("SnapBack - Explorer Session Manager")
-        self.geometry("1100x700")
-        self.minsize(900, 600)
+        self.geometry("1200x700")
+        self.minsize(1000, 600)
         
         # Configure grid
-        self.grid_columnconfigure(0, weight=0, minsize=400)
+        self.grid_columnconfigure(0, weight=0, minsize=550)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
         
