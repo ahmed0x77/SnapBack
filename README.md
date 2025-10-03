@@ -56,17 +56,7 @@ python app.py
   - Window state (normal, maximized, minimized)
   - Timestamp and metadata
 
-## Project Structure
 
-```
-SnapBack/
-├── app.py                                    # Main GUI application
-├── session_manager.py                        # Backend session management
-├── sessions/                                 # Saved session files
-├── save_explorer_session_with_geometry.py    # Original CLI save script
-├── restore_explorer_session_with_geometry.py # Original CLI restore script
-└── README.md                                 # This file
-```
 
 ## Notes
 

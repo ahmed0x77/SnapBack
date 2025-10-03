@@ -327,6 +327,11 @@ class SnapBackApp(ctk.CTk):
         self.geometry("1300x700")
         self.minsize(1100, 600)
         
+        # Set application icon
+        icon_path = os.path.join(os.path.dirname(__file__), "ICON_1.ico")
+        if os.path.exists(icon_path):
+            self.iconbitmap(icon_path)
+        
         # Configure grid
         self.grid_columnconfigure(0, weight=0, minsize=650)
         self.grid_columnconfigure(1, weight=1)
