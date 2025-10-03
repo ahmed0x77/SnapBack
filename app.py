@@ -609,21 +609,15 @@ class SnapBackApp(ctk.CTk):
         try:
             filepath = session_data.get("filepath")
             
-            # Confirm action
-            if not messagebox.askyesno(
-                "Restore Session",
-                "This will open Explorer windows for all saved paths.\nContinue?"
-            ):
-                return
-            
-            # Restore session
+            # Restore session directly without confirmation
             restored, skipped = self.session_manager.restore_session(filepath)
             
-            # Show result
-            messagebox.showinfo(
-                "Restore Complete",
-                f"Restored: {restored} window(s)\nSkipped: {skipped} window(s)"
-            )
+            # Only show message if there were errors/skipped items
+            if skipped > 0:
+                messagebox.showwarning(
+                    "Restore Complete",
+                    f"Restored: {restored} window(s)\nSkipped: {skipped} window(s)"
+                )
         except Exception as e:
             messagebox.showerror(
                 "Error",
@@ -655,8 +649,6 @@ class SnapBackApp(ctk.CTk):
             
             # Reload sessions
             self.load_sessions()
-            
-            messagebox.showinfo("Success", "Session deleted successfully!")
         except Exception as e:
             messagebox.showerror(
                 "Error",
